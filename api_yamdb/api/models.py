@@ -11,6 +11,7 @@ class Genre(models.Model):
         unique=True
     )
 
+
 class Category(models.Model):
     name = models.CharField(
         'Название',
