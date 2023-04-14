@@ -24,3 +24,10 @@ class TitleSerializer(serializers.ModelSerializer):
                 "Год выпуска не может быть больше текущего!"
             )
         return data
+
+
+class GenreSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = ('name', 'slug')
+        model = Genre
