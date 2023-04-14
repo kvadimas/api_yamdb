@@ -58,6 +58,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'api_yamdb.wsgi.application'
 
 
+# Rast framework
+REST_FRAMEWORK = {
+    'PAGE_SIZE': 5,
+}
+
+
 # Database
 
 DATABASES = {
