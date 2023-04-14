@@ -1,11 +1,8 @@
 from django.shortcuts import render
 
-from api.models import Title, Category, Genre
+from reviews.models import Title, Category, Genre
 from rest_framework import permissions, viewsets
 from api.serializers import TitleSerializer, CategorySerializer, GenreSerializer
-from api.models import Title, Genre
-from rest_framework import permissions, viewsets
-from api.serializers import TitleSerializer, GenreSerializer
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.filters import SearchFilter
 
@@ -13,6 +10,7 @@ from rest_framework.filters import SearchFilter
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
+    #permission_classes = (permissions.IsAuthenticated,)
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = (
@@ -26,6 +24,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    #permission_classes = (permissions.IsAuthenticated,)
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
@@ -34,6 +33,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    #permission_classes = (permissions.IsAuthenticated,)
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)

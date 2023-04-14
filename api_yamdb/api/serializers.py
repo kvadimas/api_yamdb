@@ -1,6 +1,14 @@
 from rest_framework import serializers
-from api.models import Title, Genre, Category
+from reviews.models import Title, Genre, Category, GenreTitle
 from datetime import datetime
+
+
+class GenreSerializer(serializers.ModelSerializer):
+    lookup_field = 'slug'
+
+    class Meta:
+        fields = ('name', 'slug')
+        model = Genre
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -18,6 +26,16 @@ class TitleSerializer(serializers.ModelSerializer):
         fields = ('name', 'year', 'description', 'genre', 'category')
         model = Title
 
+    """ def create(self, validated_data):
+        genres = validated_data.pop('genre')
+        title = Title.objects.create(**validated_data)
+        for genre in genres:
+            current_genre, status = Genre.objects.get_or_create(
+                **genre)
+            GenreTitle.objects.create(
+                genre=current_genre, title=title)
+        return title"""
+
     def validate(self, data):
         if data['year'] > datetime.now().year:
             raise serializers.ValidationError(
@@ -27,14 +45,8 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    lookup_field = 'slug'
 
     class Meta:
         fields = ('name', 'slug')
         model = Category
-
-
-class GenreSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        fields = ('name', 'slug')
-        model = Genre
