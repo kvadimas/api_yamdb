@@ -1,4 +1,8 @@
 from django.shortcuts import render
+
+from api.models import Title, Category, Genre
+from rest_framework import permissions, viewsets
+from api.serializers import TitleSerializer, CategorySerializer, GenreSerializer
 from api.models import Title, Genre
 from rest_framework import permissions, viewsets
 from api.serializers import TitleSerializer, GenreSerializer
@@ -17,6 +21,14 @@ class TitleViewSet(viewsets.ModelViewSet):
         'name',
         'year'
     )
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    pagination_class = LimitOffsetPagination
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
 
 
 class GenreViewSet(viewsets.ModelViewSet):

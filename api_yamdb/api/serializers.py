@@ -26,6 +26,13 @@ class TitleSerializer(serializers.ModelSerializer):
         return data
 
 
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = ('name', 'slug')
+        model = Category
+
+
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
