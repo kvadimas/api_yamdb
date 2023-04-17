@@ -8,7 +8,15 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'bio',)
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role'
+        )
+        read_only_fields = ('role',)
 
     def validate_name_me(self, data):
         if data.get('username') == 'me':
@@ -17,34 +25,44 @@ class UserSerializer(serializers.ModelSerializer):
             )
 
 
-class UserSignupSerializer(serializers.ModelSerializer):
-    """Сериализатор для создания объекта класса User."""
+class UserSignupSerializer(serializers.Serializer):
+    """Сериализатор добавления пользователя и отправки кода."""
 
-    class Meta:
-        model = User
-        fields = (
-            'username', 'email'
-        )
+    username = serializers.RegexField(
+        regex=r'^[\w.@+-]+\Z',
+        error_messages={
+            'invalid': ('Имя пользователя содержит недопустимый символ.')
+        },
+        max_length=150,
+        required=True
+    )
+    email = serializers.EmailField(required=True, max_length=254)
 
-    def validate(self, data):
-        """Валидация username, email, me"""
-        if User.objects.filter(username=data.get('username')):
+    def validate_username(self, value):
+        """
+        Валидация 'me'.
+        """
+        if value == 'me':
             raise serializers.ValidationError(
-                'Пользователь с таким username уже существует'
-            )
-        if User.objects.filter(email=data.get('email')):
-            raise serializers.ValidationError(
-                'Пользователь с таким email уже существует'
-            )
-        if data.get('username') == 'me':
-            raise serializers.ValidationError(
-                'Имя \'me\' зарезервировано системой'
-            )
+                "Имя \'me\' зарезервировано системой.")
+        return value
 
-        return data
+    def validate(self, attrs):
+        username = attrs['username']
+        email = attrs['email']
+        if User.objects.filter(username=username, email=email).exists():
+            return attrs
+        elif User.objects.filter(username=username).exists():
+            raise serializers.ValidationError(
+                "Пользователь с таким именем сушествует")
+        elif User.objects.filter(email=email).exists():
+            raise serializers.ValidationError(
+                "Пользователь с таким email сушествует")
+        else:
+            return attrs
 
 
 class UserConfirmationCodeSerializer(serializers.Serializer):
     """Сериализатор подтверждения кода для получения токена."""
-    email = serializers.EmailField(required=True)
+    username = serializers.CharField(required=True)
     confirmation_code = serializers.CharField(required=True)

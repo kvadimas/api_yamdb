@@ -89,9 +89,9 @@ def check_code_get_token(request):
 
     serializer = UserConfirmationCodeSerializer(data=request.data)
     if serializer.is_valid():
-        email = serializer.data.get('email')
+        username = serializer.data.get('username')
         confirmation_code = serializer.data.get('confirmation_code')
-        user = get_object_or_404(User, email=email)
+        user = get_object_or_404(User, username=username)
         if not default_token_generator.check_token(user, confirmation_code):
             msg = {'confirmation_code': 'Код подтверждения невалиден'}
             return Response(msg, status=status.HTTP_400_BAD_REQUEST)

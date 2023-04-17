@@ -46,6 +46,7 @@ class User(AbstractUser):
 
     bio = models.TextField(
         verbose_name='О себе',
+        blank=True,
     )
 
     role = models.CharField(
