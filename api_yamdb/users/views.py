@@ -34,7 +34,7 @@ class APIUserMe(APIView):
 
     def get(self, request):
         if request.user.is_authenticated:
-            user = get_object_or_404(User, id=request.user.pk)
+            user = get_object_or_404(User, pk=request.user.pk)
             serializer = UserSerializer(user)
             return Response(serializer.data)
         return Response({'error': 'Необходимо авторизоваться'},
@@ -42,7 +42,7 @@ class APIUserMe(APIView):
 
     def patch(self, request):
         if request.user.is_authenticated:
-            user = get_object_or_404(User, id=request.user.pk)
+            user = get_object_or_404(User, pk=request.user.pk)
             serializer = UserSerializer(user, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
