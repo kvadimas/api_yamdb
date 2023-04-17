@@ -16,6 +16,8 @@ from .serializers import (
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    """Вьсет модели USER"""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     # permission_classes = (IsAdmin,)
@@ -26,6 +28,8 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class APIUserMe(APIView):
+    """Вбюсет для ендпойнта /me"""
+
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -50,9 +54,11 @@ class APIUserMe(APIView):
             status=status.HTTP_401_UNAUTHORIZED)
 
 
-@api_view(['POST',])
+@api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def signup_send_code(request):
+    """Ригистрация и отправка кода подтверждения"""
+
     serializer = UserSignupSerializer(data=request.data)
     if serializer.is_valid():
         username = serializer.initial_data['username']
@@ -63,20 +69,24 @@ def signup_send_code(request):
             User.objects.create_user(username=username, email=email)
         user = get_object_or_404(User, username=username)
         confirmation_code = default_token_generator.make_token(user)
+
+        # Отправка сообщения через эмулятор в sent_emails
         send_mail(
             subject='Код подтверждения Yamdb',
             message=f'Приветсвуем Вас {username}!\n'
                     f'Ваш код подтверждения: {confirmation_code}',
             from_email='admin@yamdb.fake',
-            recipient_list=[email,]
+            recipient_list=[email]
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['POST',])
+@api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def check_code_get_token(request):
+    """Проверка кода и выдача токена"""
+
     serializer = UserConfirmationCodeSerializer(data=request.data)
     if serializer.is_valid():
         email = serializer.data.get('email')
@@ -85,6 +95,6 @@ def check_code_get_token(request):
         if not default_token_generator.check_token(user, confirmation_code):
             msg = {'confirmation_code': 'Код подтверждения невалиден'}
             return Response(msg, status=status.HTTP_400_BAD_REQUEST)
-        msg = {'token': str(AccessToken.for_user(user))}
+        msg = {'token': str(AccessToken.for_user(user))}    # генерация токена
         return Response(msg, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
