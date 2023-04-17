@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 from users.models import User
 
@@ -81,6 +82,9 @@ class CommentReviewBase(models.Model):
 class Review(CommentReviewBase):
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE, related_name='reviews')
+    score = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(10)]
+    )
 
     class Meta(CommentReviewBase.Meta):
         verbose_name = 'Отзыв'
