@@ -1,7 +1,7 @@
 import csv
 from django.core.management.base import BaseCommand, CommandError
 from users.models import User
-from reviews.models import Category, Genre, GenreTitle, Title
+from reviews.models import Category, Genre, GenreTitle, Title, Review, Comment
 
 
 
@@ -128,4 +128,46 @@ class Command(BaseCommand):
             GenreTitle.objects.bulk_create(records)
             self.stdout.write(self.style.SUCCESS(
                 f'Добавлено {n} записей в таблицу GenreTitle.'
+            ))
+
+        # Добавляем Review
+        records = []
+        with open('static/data/review.csv',
+                  'r',
+                  encoding='utf-8') as csvfile:
+            dict_reader = csv.DictReader(csvfile)
+            n = 0
+            for row in dict_reader:
+                record = Review(**row)
+                records.append(record)
+                n += 1
+
+            if options['delete_existing']:
+                Review.objects.all().delete()
+                self.stdout.write(self.style.SUCCESS(
+                    f'Таблица Review очищена от старых записей.'))
+            Review.objects.bulk_create(records)
+            self.stdout.write(self.style.SUCCESS(
+                f'Добавлено {n} записей в таблицу Review.'
+            ))
+
+        # Добавляем Comment
+        records = []
+        with open('static/data/comments.csv',
+                  'r',
+                  encoding='utf-8') as csvfile:
+            dict_reader = csv.DictReader(csvfile)
+            n = 0
+            for row in dict_reader:
+                record = Comment(**row)
+                records.append(record)
+                n += 1
+
+            if options['delete_existing']:
+                Comment.objects.all().delete()
+                self.stdout.write(self.style.SUCCESS(
+                    f'Таблица Comment очищена от старых записей.'))
+            Comment.objects.bulk_create(records)
+            self.stdout.write(self.style.SUCCESS(
+                f'Добавлено {n} записей в таблицу Comment.'
             ))
