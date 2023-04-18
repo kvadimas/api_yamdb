@@ -16,7 +16,6 @@ class UserSerializer(serializers.ModelSerializer):
             'bio',
             'role'
         )
-        # read_only_fields = ('role',)
 
     def validate_name_me(self, data):
         if data.get('username') == 'me':
@@ -64,5 +63,6 @@ class UserSignupSerializer(serializers.Serializer):
 
 class UserConfirmationCodeSerializer(serializers.Serializer):
     """Сериализатор подтверждения кода для получения токена."""
+
     username = serializers.CharField(required=True)
     confirmation_code = serializers.CharField(required=True)
