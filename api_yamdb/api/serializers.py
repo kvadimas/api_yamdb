@@ -3,7 +3,7 @@ from datetime import datetime
 from rest_framework import serializers
 from reviews.models import Category, Genre, GenreTitle, Title, Review, Comment
 
-
+# !!! Два сериализатора GenreSerializer
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -20,7 +20,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    rating = serializers.IntegerField()
+    rating = serializers.IntegerField(required=False) # !!! POST ADD Titles "Raiting is required"
     genre = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=Genre.objects.all(),
@@ -75,13 +75,13 @@ class ReviewSerializer(serializers.ModelSerializer):
         author = self.context.get('request').user
         if (
             self.context.get('request').method == 'POST'
-            and Review.objects.filter(author=author, title=title).exist()
+            and Review.objects.filter(author=author, title=title).exists()
         ):
             raise serializers.ValidationError(
                 'Вы уже оставляли отзыв на это произведение!'
             )
         return data
-    
+
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(

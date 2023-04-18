@@ -17,7 +17,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().annotate(
         rating=Avg('reviews__score')).all()
     serializer_class = TitleSerializer
-    #permission_classes = (permissions.IsAuthenticated,)
+    # permission_classes = (permissions.IsAuthenticated,)
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = (
@@ -31,7 +31,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    #permission_classes = (permissions.IsAuthenticated,)
+    # permission_classes = (permissions.IsAuthenticated,)
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
@@ -40,7 +40,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    #permission_classes = (permissions.IsAuthenticated,)
+    # permission_classes = (permissions.IsAuthenticated,)
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
