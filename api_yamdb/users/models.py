@@ -12,18 +12,25 @@ USER_ROLES = (
 
 
 class User(AbstractUser):
+    username_validator = YamdbUsernameValidator()
     username = models.CharField(
         verbose_name='Имя пользователя',
         max_length=150,
-        validators=(YamdbUsernameValidator,),
+        validators=[username_validator],
         unique=True,
         blank=False,
+        error_messages={
+            'unique': "Такой пользователь уже существует.",
+        },
     )
     email = models.EmailField(
         verbose_name='Email',
         max_length=254,
         blank=False,
         unique=True,
+        error_messages={
+            'unique': "Такой email уже зарегистрирован.",
+        },
     )
     first_name = models.CharField(
         verbose_name='Имя',
@@ -52,6 +59,13 @@ class User(AbstractUser):
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
         ordering = ('id',)
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=['username', 'email'],
+                name='unique_username_email',
+            ),
+        ]
 
     def __str__(self):
         return self.username
