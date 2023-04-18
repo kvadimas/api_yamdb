@@ -11,14 +11,6 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
 
 
-class GenreSerializer(serializers.ModelSerializer):
-    lookup_field = 'slug'
-
-    class Meta:
-        fields = ('name', 'slug')
-        model = Genre
-
-
 class TitleSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
         slug_field='slug',

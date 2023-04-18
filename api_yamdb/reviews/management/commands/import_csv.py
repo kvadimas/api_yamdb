@@ -6,7 +6,17 @@ from reviews.models import Category, Genre, GenreTitle, Title
 
 
 class Command(BaseCommand):
-    help = "Import data from csv"
+    help = "Импонтировать данные из csv"
+
+    def add_arguments(self, parser):
+        # Named (optional) arguments
+        parser.add_argument(
+            '-d',
+            action='store_true',
+            dest='delete_existing',
+            default=False,
+            help='Удалить существующие записи перед созданием новых',
+        )
 
     def handle(self, *args, **options):
         # Добавляем User
@@ -19,7 +29,10 @@ class Command(BaseCommand):
                 records.append(record)
                 n += 1
 
-            User.objects.all().delete()
+            if options['delete_existing']:
+                User.objects.all().delete()
+                self.stdout.write(self.style.SUCCESS(
+                    f'Таблица User очищена от старых записей.'))
             User.objects.bulk_create(records)
             self.stdout.write(self.style.SUCCESS(
                 f'Добавлено {n} записей в таблицу User.'))
@@ -37,7 +50,10 @@ class Command(BaseCommand):
                 records.append(record)
                 n += 1
 
-            Category.objects.all().delete()
+            if options['delete_existing']:
+                Category.objects.all().delete()
+                self.stdout.write(self.style.SUCCESS(
+                    f'Таблица Category очищена от старых записей.'))
             Category.objects.bulk_create(records)
             self.stdout.write(self.style.SUCCESS(
                 f'Добавлено {n} записей в таблицу Category.'))
@@ -54,7 +70,10 @@ class Command(BaseCommand):
                 records.append(record)
                 n += 1
 
-            Genre.objects.all().delete()
+            if options['delete_existing']:
+                Genre.objects.all().delete()
+                self.stdout.write(self.style.SUCCESS(
+                    f'Таблица Genre очищена от старых записей.'))
             Genre.objects.bulk_create(records)
             self.stdout.write(self.style.SUCCESS(
                 f'Добавлено {n} записей в таблицу Genre.'
@@ -77,7 +96,10 @@ class Command(BaseCommand):
                 records.append(record)
                 n += 1
 
-            Title.objects.all().delete()
+            if options['delete_existing']:
+                Title.objects.all().delete()
+                self.stdout.write(self.style.SUCCESS(
+                    f'Таблица Title очищена от старых записей.'))
             Title.objects.bulk_create(records)
             self.stdout.write(self.style.SUCCESS(
                 f'Добавлено {n} записей в таблицу Title.'
@@ -99,7 +121,10 @@ class Command(BaseCommand):
                 records.append(record)
                 n += 1
 
-            GenreTitle.objects.all().delete()
+            if options['delete_existing']:
+                GenreTitle.objects.all().delete()
+                self.stdout.write(self.style.SUCCESS(
+                    f'Таблица GenreTitle очищена от старых записей.'))
             GenreTitle.objects.bulk_create(records)
             self.stdout.write(self.style.SUCCESS(
                 f'Добавлено {n} записей в таблицу GenreTitle.'
