@@ -16,7 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
             'bio',
             'role'
         )
-        read_only_fields = ('role',)
+        # read_only_fields = ('role',)
 
     def validate_name_me(self, data):
         if data.get('username') == 'me':
