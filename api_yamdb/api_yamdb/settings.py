@@ -2,7 +2,6 @@ import os
 import datetime
 from pathlib import Path
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -60,6 +59,12 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'api_yamdb.wsgi.application'
+
+
+# Rast framework
+REST_FRAMEWORK = {
+    'PAGE_SIZE': 5,
+}
 
 
 # Database
