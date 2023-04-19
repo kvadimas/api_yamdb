@@ -142,7 +142,7 @@ class Command(BaseCommand):
                     id=i['id'],
                     title_id=i['title_id'],
                     text=i['text'],
-                    author=i['author'],
+                    author_id=i['author'],
                     score=i['score'],
                     pub_date=i['pub_date']
                 )
@@ -165,8 +165,14 @@ class Command(BaseCommand):
                   encoding='utf-8') as csvfile:
             dict_reader = csv.DictReader(csvfile)
             n = 0
-            for row in dict_reader:
-                record = Comment(**row)
+            for i in dict_reader:
+                record = Comment(
+                    id=i['id'],
+                    review_id=i['review_id'],
+                    text=i['text'],
+                    author_id=i['author'],
+                    pub_date=i['pub_date']
+                )
                 records.append(record)
                 n += 1
 
