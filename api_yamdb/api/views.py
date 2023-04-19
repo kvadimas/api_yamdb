@@ -49,8 +49,8 @@ class GenreViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     pagination_class = LimitOffsetPagination
-    permission_classes = (IsAuthorOrModeratorOrReadOnly,
-                          IsAuthenticatedOrReadOnly,)
+    """permission_classes = (IsAuthorOrModeratorOrReadOnly,
+                          IsAuthenticatedOrReadOnly,)"""
 
     @property
     def title(self):

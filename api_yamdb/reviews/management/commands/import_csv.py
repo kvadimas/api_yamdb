@@ -88,10 +88,10 @@ class Command(BaseCommand):
             n = 0
             for i in dict_reader:
                 record = Title(
-                    i['id'],
-                    i['name'],
-                    i['year'],
-                    i['category']
+                    id=i['id'],
+                    name=i['name'],
+                    year=i['year'],
+                    category_id=i['category']
                 )
                 records.append(record)
                 n += 1
@@ -114,9 +114,9 @@ class Command(BaseCommand):
             n = 0
             for i in dict_reader:
                 record = GenreTitle(
-                    i['id'],
-                    i['genre_id'],
-                    i['title_id']
+                    id=i['id'],
+                    genre_id=i['genre_id'],
+                    title_id=i['title_id']
                 )
                 records.append(record)
                 n += 1
@@ -137,8 +137,15 @@ class Command(BaseCommand):
                   encoding='utf-8') as csvfile:
             dict_reader = csv.DictReader(csvfile)
             n = 0
-            for row in dict_reader:
-                record = Review(**row)
+            for i in dict_reader:
+                record = Review(
+                    id=i['id'],
+                    title_id=i['title_id'],
+                    text=i['text'],
+                    author=i['author'],
+                    score=i['score'],
+                    pub_date=i['pub_date']
+                )
                 records.append(record)
                 n += 1
 

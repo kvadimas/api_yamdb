@@ -34,7 +34,8 @@ class Title(models.Model):
     """Произведения, к которым пишут отзывы (фильм, книга или песенка)."""
     name = models.CharField(
         'Название',
-        max_length=256
+        max_length=256,
+        db_index=True
     )
     year = models.IntegerField('Год выпуска')
     description = models.TextField('Описание')
@@ -42,14 +43,17 @@ class Title(models.Model):
         Genre,
         through='GenreTitle',
         blank=True,
-        null=True
+        null=True,
+        db_index=True
     )
     category = models.ForeignKey(
         Category,
         related_name='titles',
         on_delete=models.SET_NULL,
         blank=True,
-        null=True
+        null=True,
+        db_column='category',
+        db_index=True
     )
 
     def __str__(self) -> str:
