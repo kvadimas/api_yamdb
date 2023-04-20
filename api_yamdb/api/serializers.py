@@ -11,16 +11,15 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
 
 
-class GenreSerializer(serializers.ModelSerializer):
-    lookup_field = 'slug'
+class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('name', 'slug')
-        model = Genre
+        model = Category
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    rating = serializers.IntegerField(required=False) # !!! POST ADD Titles "Raiting is required"
+    rating = serializers.IntegerField(required=False)
     genre = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=Genre.objects.all(),
@@ -32,18 +31,10 @@ class TitleSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = ('id', 'rating', 'name', 'year', 'description', 'genre', 'category')
+        fields = (
+            'id', 'rating', 'name', 'year', 'description', 'genre', 'category'
+        )
         model = Title
-
-    """ def create(self, validated_data):
-        genres = validated_data.pop('genre')
-        title = Title.objects.create(**validated_data)
-        for genre in genres:
-            current_genre, status = Genre.objects.get_or_create(
-                **genre)
-            GenreTitle.objects.create(
-                genre=current_genre, title=title)
-        return title"""
 
     def validate(self, data):
         if data['year'] > datetime.now().year:
@@ -51,14 +42,6 @@ class TitleSerializer(serializers.ModelSerializer):
                 "Год выпуска не может быть больше текущего!"
             )
         return data
-
-
-class CategorySerializer(serializers.ModelSerializer):
-    lookup_field = 'slug'
-
-    class Meta:
-        fields = ('name', 'slug')
-        model = Category
 
 
 class ReviewSerializer(serializers.ModelSerializer):
