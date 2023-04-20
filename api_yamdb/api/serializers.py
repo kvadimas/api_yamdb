@@ -1,17 +1,11 @@
 from datetime import datetime
 
 from rest_framework import serializers
-from reviews.models import Category, Genre, GenreTitle, Title, Review, Comment
 
-# !!! Два сериализатора GenreSerializer
+from reviews.models import Category, Genre, Title, Review, Comment
+
+
 class GenreSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        fields = ('name', 'slug')
-        model = Genre
-
-
-class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('name', 'slug')
@@ -32,8 +26,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = (
-            'id', 'rating', 'name', 'year', 'description', 'genre', 'category'
-        )
+            'id', 'rating', 'name', 'year', 'description', 'genre', 'category')
         model = Title
 
     def validate(self, data):

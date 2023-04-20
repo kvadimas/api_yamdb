@@ -1,12 +1,12 @@
-from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
-from rest_framework import permissions, viewsets
+from rest_framework import viewsets, mixins
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from reviews.models import Category, Genre, Title
-from .permissions import IsAuthorOrModeratorOrReadOnly
+
+from .permissions import (IsAdminSuperuserOrReadOnly,
+                          IsAuthorAdminModeratorOrReadOnly)
 from api.serializers import (CategorySerializer, GenreSerializer,
                              TitleSerializer, ReviewSerializer,
                              CommentSerializer)
@@ -17,7 +17,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().annotate(
         rating=Avg('reviews__score')).all()
     serializer_class = TitleSerializer
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (IsAdminSuperuserOrReadOnly,)
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = (
@@ -28,29 +28,36 @@ class TitleViewSet(viewsets.ModelViewSet):
     )
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(mixins.CreateModelMixin,
+                      mixins.ListModelMixin,
+                      mixins.DestroyModelMixin,
+                      viewsets.GenericViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (IsAdminSuperuserOrReadOnly,)
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
+    lookup_field = ('slug')
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(mixins.CreateModelMixin,
+                   mixins.ListModelMixin,
+                   mixins.DestroyModelMixin,
+                   viewsets.GenericViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (IsAdminSuperuserOrReadOnly,)
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
+    lookup_field = ('slug')
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     pagination_class = LimitOffsetPagination
-    permission_classes = (IsAuthorOrModeratorOrReadOnly,
-                          IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthorAdminModeratorOrReadOnly,)
 
     @property
     def title(self):
@@ -66,8 +73,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     pagination_class = LimitOffsetPagination
-    permission_classes = (IsAuthorOrModeratorOrReadOnly,
-                          IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthorAdminModeratorOrReadOnly,)
 
     @property
     def review(self):
