@@ -90,6 +90,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'users.User'
 
+# Rast framework
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
