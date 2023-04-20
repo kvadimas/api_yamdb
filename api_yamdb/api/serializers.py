@@ -3,7 +3,7 @@ from datetime import datetime
 from rest_framework import serializers
 from reviews.models import Category, Genre, GenreTitle, Title, Review, Comment
 
-
+# !!! Два сериализатора GenreSerializer
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -64,7 +64,7 @@ class ReviewSerializer(serializers.ModelSerializer):
                 'Вы уже оставляли отзыв на это произведение!'
             )
         return data
-    
+
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(

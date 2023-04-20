@@ -3,6 +3,7 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
@@ -13,6 +14,7 @@ from .serializers import (
     UserSerializer,
     UserSignupSerializer,
 )
+from api.permissions import IsAdminSuperuser
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -20,11 +22,13 @@ class UserViewSet(viewsets.ModelViewSet):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    # permission_classes = (IsAdmin,)
+    permission_classes = (IsAdminSuperuser,)
     filter_backends = (filters.SearchFilter,)
     filter_fields = ('username',)
     search_fields = ('username',)
     lookup_field = 'username'
+    pagination_class = PageNumberPagination
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
 
 class APIUserMe(APIView):
@@ -45,6 +49,7 @@ class APIUserMe(APIView):
             user = get_object_or_404(User, pk=request.user.pk)
             serializer = UserSerializer(user, data=request.data, partial=True)
             if serializer.is_valid():
+                serializer.validated_data['role'] = user.role
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors,
@@ -89,9 +94,9 @@ def check_code_get_token(request):
 
     serializer = UserConfirmationCodeSerializer(data=request.data)
     if serializer.is_valid():
-        email = serializer.data.get('email')
+        username = serializer.data.get('username')
         confirmation_code = serializer.data.get('confirmation_code')
-        user = get_object_or_404(User, email=email)
+        user = get_object_or_404(User, username=username)
         if not default_token_generator.check_token(user, confirmation_code):
             msg = {'confirmation_code': 'Код подтверждения невалиден'}
             return Response(msg, status=status.HTTP_400_BAD_REQUEST)
