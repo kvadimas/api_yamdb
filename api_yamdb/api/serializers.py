@@ -1,18 +1,11 @@
 from datetime import datetime
 
 from rest_framework import serializers
-from reviews.models import Category, Genre, GenreTitle, Title, Review, Comment
 
-# !!! Два сериализатора GenreSerializer
-class GenreSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        fields = ('name', 'slug')
-        model = Genre
+from reviews.models import Category, Genre, Title, Review, Comment
 
 
 class GenreSerializer(serializers.ModelSerializer):
-    lookup_field = 'slug'
 
     class Meta:
         fields = ('name', 'slug')
@@ -20,7 +13,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    rating = serializers.IntegerField(required=False) # !!! POST ADD Titles "Raiting is required"
+    rating = serializers.IntegerField(required=False)
     genre = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=Genre.objects.all(),
@@ -32,7 +25,8 @@ class TitleSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = ('id', 'rating', 'name', 'year', 'description', 'genre', 'category')
+        fields = (
+            'id', 'rating', 'name', 'year', 'description', 'genre', 'category')
         model = Title
 
     """ def create(self, validated_data):
