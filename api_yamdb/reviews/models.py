@@ -1,6 +1,5 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-
 from users.models import User
 
 
@@ -39,14 +38,12 @@ class Title(models.Model):
         max_length=256,
         db_index=True
     )
-    year = models.IntegerField('Год выпуска')
+    year = models.IntegerField('Год выпуска', blank=False)
     description = models.TextField('Описание')
     genre = models.ManyToManyField(
         Genre,
         through='GenreTitle',
         db_index=True
-        # blank=True,
-        # null=True
     )
     category = models.ForeignKey(
         Category,

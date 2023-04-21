@@ -1,3 +1,4 @@
+from api.permissions import IsAdminSuperuser
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
@@ -9,12 +10,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
 from .models import User
-from .serializers import (
-    UserConfirmationCodeSerializer,
-    UserSerializer,
-    UserSignupSerializer,
-)
-from api.permissions import IsAdminSuperuser
+from .serializers import (UserConfirmationCodeSerializer, UserSerializer,
+                          UserSignupSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
