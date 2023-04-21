@@ -60,6 +60,7 @@ class Title(models.Model):
 
 
 class GenreTitle(models.Model):
+    """Таблица связывающая Genre и Title по типу ManyToMany"""
     genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
     title = models.ForeignKey(Title, on_delete=models.CASCADE)
 
