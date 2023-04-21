@@ -39,7 +39,7 @@ class Title(models.Model):
         max_length=256,
         db_index=True
     )
-    year = models.IntegerField('Год выпуска')
+    year = models.IntegerField('Год выпуска', blank=False)
     description = models.TextField('Описание')
     genre = models.ManyToManyField(
         Genre,

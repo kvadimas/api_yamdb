@@ -3,29 +3,38 @@ from django.db.models import Avg
 from rest_framework import viewsets, mixins
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import LimitOffsetPagination
+from django_filters.rest_framework import DjangoFilterBackend
 from reviews.models import Category, Genre, Title
 
-from .permissions import (IsAdminSuperuserOrReadOnly,
+from api.permissions import (IsAdminSuperuserOrReadOnly,
                           IsAuthorAdminModeratorOrReadOnly)
 from api.serializers import (CategorySerializer, GenreSerializer,
                              TitleSerializer, ReviewSerializer,
-                             CommentSerializer)
+                             CommentSerializer, TitleCreateSerializer)
 from reviews.models import Review
+from api.filters import TitleFilter
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().annotate(
         rating=Avg('reviews__score')).all()
-    serializer_class = TitleSerializer
+    # serializer_class = TitleSerializer
     permission_classes = (IsAdminSuperuserOrReadOnly,)
     pagination_class = LimitOffsetPagination
-    filter_backends = (SearchFilter,)
-    search_fields = (
-        'category__slug',
-        'genre__slug',
-        'name',
-        'year'
-    )
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TitleFilter
+    #filter_backends = (SearchFilter,)
+    #search_fields = (
+    #    'category__slug',
+    #    'genre__slug',
+    #    'name',
+    #    'year'
+    #)
+
+    def get_serializer_class(self):
+        if self.request.method in ('POST', 'PATCH',):
+            return TitleCreateSerializer
+        return TitleSerializer
 
 
 class CategoryViewSet(mixins.CreateModelMixin,
