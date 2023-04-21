@@ -1,13 +1,8 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import (
-    APIUserMe,
-    check_code_get_token,
-    signup_send_code,
-    UserViewSet
-)
-
+from .views import (APIUserMe, UserViewSet, check_code_get_token,
+                    signup_send_code)
 
 app_name = 'users'
 

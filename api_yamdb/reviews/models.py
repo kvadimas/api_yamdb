@@ -1,6 +1,5 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-
 from users.models import User
 
 
@@ -45,8 +44,6 @@ class Title(models.Model):
         Genre,
         through='GenreTitle',
         db_index=True
-        # blank=True,
-        # null=True
     )
     category = models.ForeignKey(
         Category,

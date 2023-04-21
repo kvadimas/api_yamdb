@@ -3,7 +3,6 @@ from django.db import models
 
 from .validators import YamdbUsernameValidator
 
-
 USER_ROLES = (
     ('user', 'user'),
     ('moderator', 'moderator'),
