@@ -9,7 +9,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('name', 'slug')
-        model = Genre
+        model = Category
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -29,30 +29,12 @@ class TitleSerializer(serializers.ModelSerializer):
             'id', 'rating', 'name', 'year', 'description', 'genre', 'category')
         model = Title
 
-    """ def create(self, validated_data):
-        genres = validated_data.pop('genre')
-        title = Title.objects.create(**validated_data)
-        for genre in genres:
-            current_genre, status = Genre.objects.get_or_create(
-                **genre)
-            GenreTitle.objects.create(
-                genre=current_genre, title=title)
-        return title"""
-
     def validate(self, data):
         if data['year'] > datetime.now().year:
             raise serializers.ValidationError(
                 "Год выпуска не может быть больше текущего!"
             )
         return data
-
-
-class CategorySerializer(serializers.ModelSerializer):
-    lookup_field = 'slug'
-
-    class Meta:
-        fields = ('name', 'slug')
-        model = Category
 
 
 class ReviewSerializer(serializers.ModelSerializer):
