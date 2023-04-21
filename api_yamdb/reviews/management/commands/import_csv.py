@@ -18,7 +18,7 @@ class Command(BaseCommand):
             help='Удалить существующие записи перед созданием новых',
         )
 
-    def handle(self, *args, **options): # noqa
+    def handle(self, *args, **options):  # noqa
         """Метод импортирующий csv в базу данных"""
         # Добавляем User
         records = []
