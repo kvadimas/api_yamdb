@@ -1,5 +1,6 @@
 from django.contrib import admin
 from users.models import User
+from .models import Title, Genre, Category, Review, Comment
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -13,4 +14,31 @@ class UserAdmin(admin.ModelAdmin):
 
 admin.site.register(User, UserAdmin)
 
-# Добавьте модели в админку
+
+@admin.register(Title)
+class TitleAdmin(admin.ModelAdmin):
+    list_display = ('genre', 'category', 'year', 'name')
+    list_filter = ('year', )
+    search_fields = ('name__sicontains', )
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    search_fields = ('category__slug', )
+
+
+@admin.register(Genre)
+class GenreAdmin(admin.ModelAdmin):
+    search_fields = ('genre__slug', )
+
+
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
+    search_fields = ('text', )
+    list_filter = ('author', )
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    search_fields = ('text', )
+    list_filter = ('author', )

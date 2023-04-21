@@ -9,7 +9,7 @@ class Command(BaseCommand):
     help = "Импонтировать данные из csv"
 
     def add_arguments(self, parser):
-        # Named (optional) arguments
+        """Использование опционального не обязательного аргумента"""
         parser.add_argument(
             '-d',
             action='store_true',
@@ -18,7 +18,8 @@ class Command(BaseCommand):
             help='Удалить существующие записи перед созданием новых',
         )
 
-    def handle(self, *args, **options):
+    def handle(self, *args, **options): # noqa
+        """Метод импортирующий csv в базу данных"""
         # Добавляем User
         records = []
         with open('static/data/users.csv',
