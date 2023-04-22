@@ -1,8 +1,19 @@
 import csv
 
+from django.apps import apps
+
 from django.core.management.base import BaseCommand
-from reviews.models import Category, Comment, Genre, GenreTitle, Review, Title
-from users.models import User
+
+# Import csv
+TABLE_IMPORT = {
+    'static/data/users.csv': {'users': 'User'},
+    'static/data/category.csv': {'reviews': 'Category'},
+    'static/data/genre.csv': {'reviews': 'Genre'},
+    'static/data/titles.csv': {'reviews': 'Title'},
+    'static/data/genre_title.csv': {'reviews': 'GenreTitle'},
+    'static/data/review.csv': {'reviews': 'Review'},
+    'static/data/comments.csv': {'reviews': 'Comment'}
+}
 
 
 class Command(BaseCommand):
@@ -18,166 +29,74 @@ class Command(BaseCommand):
             help='Удалить существующие записи перед созданием новых',
         )
 
-    def handle(self, *args, **options):  # noqa
+    def handle(self, *args, **options):
         """Метод импортирующий csv в базу данных"""
         # Добавляем User
-        records = []
-        with open('static/data/users.csv',
-                  'r',
-                  encoding='utf-8') as csvfile:
-            dict_reader = csv.DictReader(csvfile)
-            for row in dict_reader:
-                record = User(**row)
-                records.append(record)
-            count_row = dict_reader.line_num - 1
-            name = type(record).__name__
-
+        for link, tab in TABLE_IMPORT.items():
+            _name = list(tab.values())[0]
+            _app = list(tab.keys())[0]
+            _model = apps.get_model(_app, _name)
             if options['delete_existing']:
-                User.objects.all().delete()
+                _model.objects.all().delete()
                 self.stdout.write(self.style.SUCCESS(
-                    f'Таблица {name} очищена от старых записей.'))
-            User.objects.bulk_create(records)
-            self.stdout.write(self.style.SUCCESS(
-                f'Добавлено {count_row} записей в таблицу {name}.'))
+                    f'Таблица {_name} очищена от старых записей.'))
 
-        # Добавляем Category
-        records = []
-        with open('static/data/category.csv',
-                  'r',
-                  encoding='utf-8') as csvfile:
-            dict_reader = csv.DictReader(csvfile)
-            for row in dict_reader:
-                record = Category(**row)
-                records.append(record)
-            count_row = dict_reader.line_num - 1
-            name = type(record).__name__
+            with open(link,
+                      'r',
+                      encoding='utf-8') as csvfile:
+                dict_reader = csv.DictReader(csvfile)
+                count_row = sum(1 for row in dict_reader)
 
-            if options['delete_existing']:
-                Category.objects.all().delete()
-                self.stdout.write(self.style.SUCCESS(
-                    f'Таблица {name} очищена от старых записей.'))
-            Category.objects.bulk_create(records)
-            self.stdout.write(self.style.SUCCESS(
-                f'Добавлено {count_row} записей в таблицу {name}.'))
+                if _name == 'Title':
+                    records = []
+                    for i in dict_reader:
+                        record = _model(
+                            id=i['id'],
+                            name=i['name'],
+                            year=i['year'],
+                            category_id=i['category']
+                        )
+                        records.append(record)
+                    _model.objects.bulk_create(records)
+                    self.stdout.write(self.style.SUCCESS(
+                        f'Добавлено {count_row} записей в таблицу {_name}.'))
+                    continue
 
-        # Добавляем Genre
-        records = []
-        with open('static/data/genre.csv',
-                  'r',
-                  encoding='utf-8') as csvfile:
-            dict_reader = csv.DictReader(csvfile)
-            for row in dict_reader:
-                record = Genre(**row)
-                records.append(record)
-            count_row = dict_reader.line_num - 1
-            name = type(record).__name__
+                if _name == 'Review':
+                    records = []
+                    for i in dict_reader:
+                        record = _model(
+                            id=i['id'],
+                            title_id=i['title_id'],
+                            text=i['text'],
+                            author_id=i['author'],
+                            score=i['score'],
+                            pub_date=i['pub_date']
+                        )
+                        records.append(record)
+                    _model.objects.bulk_create(records)
+                    self.stdout.write(self.style.SUCCESS(
+                        f'Добавлено {count_row} записей в таблицу {_name}.'))
+                    continue
 
-            if options['delete_existing']:
-                Genre.objects.all().delete()
-                self.stdout.write(self.style.SUCCESS(
-                    f'Таблица {name} очищена от старых записей.'))
-            Genre.objects.bulk_create(records)
-            self.stdout.write(self.style.SUCCESS(
-                f'Добавлено {count_row} записей в таблицу {name}.'))
+                if _name == 'Comment':
+                    records = []
+                    for i in dict_reader:
+                        record = _model(
+                            id=i['id'],
+                            review_id=i['review_id'],
+                            text=i['text'],
+                            author_id=i['author'],
+                            pub_date=i['pub_date']
+                        )
+                        records.append(record)
+                    _model.objects.bulk_create(records)
+                    self.stdout.write(self.style.SUCCESS(
+                        f'Добавлено {count_row} записей в таблицу {_name}.'))
+                    continue
 
-        # Добавляем Title
-        records = []
-        with open('static/data/titles.csv',
-                  'r',
-                  encoding='utf-8') as csvfile:
-            dict_reader = csv.DictReader(csvfile)
-            for i in dict_reader:
-                record = Title(
-                    id=i['id'],
-                    name=i['name'],
-                    year=i['year'],
-                    category_id=i['category']
+                _model.objects.bulk_create(
+                    _model(**data) for data in dict_reader
                 )
-                records.append(record)
-            count_row = dict_reader.line_num - 1
-            name = type(record).__name__
-
-            if options['delete_existing']:
-                Title.objects.all().delete()
-                self.stdout.write(self.style.SUCCESS(
-                    f'Таблица {name} очищена от старых записей.'))
-            Title.objects.bulk_create(records)
             self.stdout.write(self.style.SUCCESS(
-                f'Добавлено {count_row} записей в таблицу {name}.'))
-
-        # Добавляем GenreTitle
-        records = []
-        with open('static/data/genre_title.csv',
-                  'r',
-                  encoding='utf-8') as csvfile:
-            dict_reader = csv.DictReader(csvfile)
-            for i in dict_reader:
-                record = GenreTitle(
-                    id=i['id'],
-                    genre_id=i['genre_id'],
-                    title_id=i['title_id']
-                )
-                records.append(record)
-            count_row = dict_reader.line_num - 1
-            name = type(record).__name__
-
-            if options['delete_existing']:
-                GenreTitle.objects.all().delete()
-                self.stdout.write(self.style.SUCCESS(
-                    f'Таблица {name} очищена от старых записей.'))
-            GenreTitle.objects.bulk_create(records)
-            self.stdout.write(self.style.SUCCESS(
-                f'Добавлено {count_row} записей в таблицу {name}.'))
-
-        # Добавляем Review
-        records = []
-        with open('static/data/review.csv',
-                  'r',
-                  encoding='utf-8') as csvfile:
-            dict_reader = csv.DictReader(csvfile)
-            for i in dict_reader:
-                record = Review(
-                    id=i['id'],
-                    title_id=i['title_id'],
-                    text=i['text'],
-                    author_id=i['author'],
-                    score=i['score'],
-                    pub_date=i['pub_date']
-                )
-                records.append(record)
-            count_row = dict_reader.line_num - 1
-            name = type(record).__name__
-
-            if options['delete_existing']:
-                Review.objects.all().delete()
-                self.stdout.write(self.style.SUCCESS(
-                    f'Таблица {name} очищена от старых записей.'))
-            Review.objects.bulk_create(records)
-            self.stdout.write(self.style.SUCCESS(
-                f'Добавлено {count_row} записей в таблицу {name}.'))
-
-        # Добавляем Comment
-        records = []
-        with open('static/data/comments.csv',
-                  'r',
-                  encoding='utf-8') as csvfile:
-            dict_reader = csv.DictReader(csvfile)
-            for i in dict_reader:
-                record = Comment(
-                    id=i['id'],
-                    review_id=i['review_id'],
-                    text=i['text'],
-                    author_id=i['author'],
-                    pub_date=i['pub_date']
-                )
-                records.append(record)
-            count_row = dict_reader.line_num - 1
-            name = type(record).__name__
-
-            if options['delete_existing']:
-                Comment.objects.all().delete()
-                self.stdout.write(self.style.SUCCESS(
-                    f'Таблица {name} очищена от старых записей.'))
-            Comment.objects.bulk_create(records)
-            self.stdout.write(self.style.SUCCESS(
-                f'Добавлено {count_row} записей в таблицу {name}.'))
+                f'Добавлено {count_row} записей в таблицу {_name}.'))

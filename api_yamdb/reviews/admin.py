@@ -18,7 +18,7 @@ admin.site.register(User, UserAdmin)
 
 @admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
-    list_display = ('genre', 'category', 'year', 'name')
+    list_display = ('year', 'name')
     list_filter = ('year', )
     search_fields = ('name__sicontains', )
 
