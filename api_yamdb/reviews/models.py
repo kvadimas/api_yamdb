@@ -69,7 +69,7 @@ class GenreTitle(models.Model):
         return f'{self.genre} {self.title}'
 
 
-class CommentReviewBase(models.Model):
+class BaseModel(models.Model):
     text = models.TextField()
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='%(class)ss')
@@ -84,7 +84,7 @@ class CommentReviewBase(models.Model):
         return self.text[:80]
 
 
-class Review(CommentReviewBase):
+class Review(BaseModel):
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE, related_name='reviews')
     score = models.PositiveSmallIntegerField(
@@ -102,7 +102,7 @@ class Review(CommentReviewBase):
         ]
 
 
-class Comment(CommentReviewBase):
+class Comment(BaseModel):
     review = models.ForeignKey(
         Review, on_delete=models.CASCADE, related_name='comments')
 
