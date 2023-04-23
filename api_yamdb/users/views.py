@@ -1,6 +1,7 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
+from django.template.loader import get_template
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
@@ -62,26 +63,25 @@ def signup_send_code(request):
     """Ригистрация и отправка кода подтверждения"""
 
     serializer = UserSignupSerializer(data=request.data)
-    if serializer.is_valid():
-        username = serializer.initial_data['username']
-        email = serializer.initial_data['email']
-        check_user = User.objects.filter(
-            username=username, email=email).exists()
-        if not check_user:
-            User.objects.create_user(username=username, email=email)
-        user = get_object_or_404(User, username=username)
-        confirmation_code = default_token_generator.make_token(user)
+    serializer.is_valid(raise_exception=True)
+    username = serializer.initial_data['username']
+    serializer.save()
+    user = get_object_or_404(User, username=username)
+    confirmation_code = default_token_generator.make_token(user)
 
-        # Отправка сообщения через эмулятор в sent_emails
-        send_mail(
-            subject='Код подтверждения Yamdb',
-            message=f'Приветсвуем Вас {username}!\n'
-                    f'Ваш код подтверждения: {confirmation_code}',
-            from_email='admin@yamdb.fake',
-            recipient_list=[email]
-        )
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    context = {
+        'title': 'Код подтверждения Yamdb',
+        'username': user.username,
+        'confirmation_code': confirmation_code
+    }
+    message = get_template('email_confirm.html').render(context)
+    send_mail(
+        subject='Код подтверждения Yamdb',
+        message=message,
+        from_email='admin@yamdb.fake',
+        recipient_list=[user.email]
+    )
+    return Response(serializer.initial_data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
