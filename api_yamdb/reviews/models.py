@@ -91,7 +91,7 @@ class Review(BaseModel):
         validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
 
-    class Meta(CommentReviewBase.Meta):
+    class Meta(BaseModel.Meta):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         constraints = [
@@ -106,6 +106,6 @@ class Comment(BaseModel):
     review = models.ForeignKey(
         Review, on_delete=models.CASCADE, related_name='comments')
 
-    class Meta(CommentReviewBase.Meta):
+    class Meta(BaseModel.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
