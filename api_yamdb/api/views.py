@@ -6,10 +6,7 @@ from rest_framework.filters import SearchFilter
 from rest_framework.pagination import LimitOffsetPagination
 
 from api.filters import TitleFilter
-from api.permissions import (
-    IsAuthorAdminModeratorOrReadOnly,
-    IsAdminSuperuserOrReadOnly,
-)
+from api.permissions import (IsAdminOrRO, IsAuthorOrRO, IsModeratorOrRO)
 from api.serializers import (
     CategorySerializer,
     CommentSerializer,
@@ -24,7 +21,7 @@ from reviews.models import Category, Genre, Review, Title
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().annotate(
         rating=Avg('reviews__score')).all()
-    permission_classes = (IsAdminSuperuserOrReadOnly,)
+    permission_classes = [IsAdminOrRO]
     pagination_class = LimitOffsetPagination
     filter_backends = [DjangoFilterBackend]
     filterset_class = TitleFilter
@@ -41,7 +38,7 @@ class CategoryViewSet(mixins.CreateModelMixin,
                       viewsets.GenericViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAdminSuperuserOrReadOnly,)
+    permission_classes = [IsAdminOrRO]
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
@@ -54,7 +51,7 @@ class GenreViewSet(mixins.CreateModelMixin,
                    viewsets.GenericViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsAdminSuperuserOrReadOnly,)
+    permission_classes = (IsAdminOrRO,)
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
@@ -64,7 +61,7 @@ class GenreViewSet(mixins.CreateModelMixin,
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     pagination_class = LimitOffsetPagination
-    permission_classes = (IsAuthorAdminModeratorOrReadOnly,)
+    permission_classes = [IsAuthorOrRO | IsAdminOrRO | IsModeratorOrRO]
 
     @property
     def title(self):
@@ -80,7 +77,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     pagination_class = LimitOffsetPagination
-    permission_classes = (IsAuthorAdminModeratorOrReadOnly,)
+    permission_classes = [IsAuthorOrRO | IsAdminOrRO | IsModeratorOrRO]
 
     @property
     def review(self):
