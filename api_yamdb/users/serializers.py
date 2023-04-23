@@ -60,6 +60,9 @@ class UserSignupSerializer(serializers.Serializer):
         else:
             return attrs
 
+    def create(self, validated_data):
+        return User.objects.get_or_create(**validated_data)
+
 
 class UserConfirmationCodeSerializer(serializers.Serializer):
     """Сериализатор подтверждения кода для получения токена."""
