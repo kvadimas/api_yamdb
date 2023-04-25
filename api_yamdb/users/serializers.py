@@ -16,12 +16,16 @@ class UserSerializer(serializers.ModelSerializer):
             'bio',
             'role'
         )
+        # validators = [CustomValidatorMixin]
 
-    def validate_name_me(self, data):
-        if data.get('username') == 'me':
+    def validate_username(self, value):
+        """
+        Валидация 'me'.
+        """
+        if value == 'me':
             raise serializers.ValidationError(
-                'Использовать имя \'me\' запрещено.'
-            )
+                "Имя \'me\' зарезервировано системой.")
+        return value
 
 
 class UserSignupSerializer(serializers.Serializer):
@@ -46,22 +50,22 @@ class UserSignupSerializer(serializers.Serializer):
                 "Имя \'me\' зарезервировано системой.")
         return value
 
-    def validate(self, attrs):
-        username = attrs['username']
-        email = attrs['email']
-        if User.objects.filter(username=username, email=email).exists():
-            return attrs
-        elif User.objects.filter(username=username).exists():
-            raise serializers.ValidationError(
-                "Пользователь с таким именем сушествует")
-        elif User.objects.filter(email=email).exists():
-            raise serializers.ValidationError(
-                "Пользователь с таким email сушествует")
-        else:
-            return attrs
+    # def validate(self, attrs):
+    #     username = attrs['username']
+    #     email = attrs['email']
+    #     if User.objects.filter(username=username, email=email).exists():
+    #         return attrs
+    #     elif User.objects.filter(username=username).exists():
+    #         raise serializers.ValidationError(
+    #             "Пользователь с таким именем сушествует")
+    #     elif User.objects.filter(email=email).exists():
+    #         raise serializers.ValidationError(
+    #             "Пользователь с таким email сушествует")
+    #     else:
+    #         return attrs
 
     def create(self, validated_data):
-        return User.objects.get_or_create(**validated_data)
+        return User.objects.create(**validated_data)
 
 
 class UserConfirmationCodeSerializer(serializers.Serializer):

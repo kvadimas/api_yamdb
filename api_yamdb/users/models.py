@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 
-from .validators import YamdbUsernameValidator
 
 USER_ROLES = (
     ('user', 'user'),
@@ -16,6 +16,7 @@ class User(AbstractUser):
         max_length=150,
         unique=True,
         blank=False,
+        validators=[UnicodeUsernameValidator()],
         error_messages={
             'unique': "Такой пользователь уже существует.",
         },

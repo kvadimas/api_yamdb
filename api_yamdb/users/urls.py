@@ -1,8 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import (
-    APIUserMe, UserViewSet, check_code_get_token, signup_send_code)
+from .views import UserViewSet, check_code_get_token, signup_send_code
 
 app_name = 'users'
 
@@ -16,6 +15,5 @@ auth_urlpatterns = [
 
 urlpatterns = [
     path('v1/auth/', include(auth_urlpatterns), name='auth'),
-    path('v1/users/me/', APIUserMe.as_view(), name='me'),
     path('', include(router_v1 .urls), name='api-root'),
 ]

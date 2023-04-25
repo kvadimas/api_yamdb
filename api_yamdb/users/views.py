@@ -1,12 +1,13 @@
+from sqlite3 import IntegrityError
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.template.loader import get_template
 from rest_framework import filters, permissions, status, viewsets
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.tokens import AccessToken
 
 from .models import User
@@ -28,33 +29,24 @@ class UserViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     http_method_names = ['get', 'post', 'patch', 'delete']
 
-
-class APIUserMe(APIView):
-    """Вбюсет для ендпойнта /me"""
-
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request):
-        if request.user.is_authenticated:
-            user = get_object_or_404(User, pk=request.user.pk)
-            serializer = UserSerializer(user)
-            return Response(serializer.data)
-        return Response({'error': 'Необходимо авторизоваться'},
-                        status=status.HTTP_401_UNAUTHORIZED)
-
-    def patch(self, request):
-        if request.user.is_authenticated:
-            user = get_object_or_404(User, pk=request.user.pk)
+    @action(
+        methods=['GET', 'PATCH'],
+        detail=False,
+        url_path='me',
+        url_name='me',
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def me_actions(self, request):
+        """Обработка эндпойнта /me."""
+        if request.method == 'PATCH':
+            user = request.user
             serializer = UserSerializer(user, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.validated_data['role'] = user.role
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
-        return Response(
-            'Дествие недоступно для неавторизованного',
-            status=status.HTTP_401_UNAUTHORIZED)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(role=user.role)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -65,23 +57,28 @@ def signup_send_code(request):
     serializer = UserSignupSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     username = serializer.initial_data['username']
-    serializer.save()
-    user = get_object_or_404(User, username=username)
-    confirmation_code = default_token_generator.make_token(user)
+    try:
+        serializer.save()
+    except IntegrityError as er:
+        return Response(er, status=status.HTTP_400_BAD_REQUEST)
+    
+    finally:
+        user = get_object_or_404(User, username=username)
+        confirmation_code = default_token_generator.make_token(user)
 
-    context = {
-        'title': 'Код подтверждения Yamdb',
-        'username': user.username,
-        'confirmation_code': confirmation_code
-    }
-    message = get_template('email_confirm.html').render(context)
-    send_mail(
-        subject='Код подтверждения Yamdb',
-        message=message,
-        from_email='admin@yamdb.fake',
-        recipient_list=[user.email]
-    )
-    return Response(serializer.initial_data, status=status.HTTP_200_OK)
+        context = {
+            'title': 'Код подтверждения Yamdb',
+            'username': user.username,
+            'confirmation_code': confirmation_code
+        }
+        message = get_template('email_confirm.html').render(context)
+        send_mail(
+            subject='Код подтверждения Yamdb',
+            message=message,
+            from_email='admin@yamdb.fake',
+            recipient_list=[user.email]
+        )
+        return Response(serializer.initial_data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -90,13 +87,12 @@ def check_code_get_token(request):
     """Проверка кода и выдача токена"""
 
     serializer = UserConfirmationCodeSerializer(data=request.data)
-    if serializer.is_valid():
-        username = serializer.data.get('username')
-        confirmation_code = serializer.data.get('confirmation_code')
-        user = get_object_or_404(User, username=username)
-        if not default_token_generator.check_token(user, confirmation_code):
-            msg = {'confirmation_code': 'Код подтверждения невалиден'}
-            return Response(msg, status=status.HTTP_400_BAD_REQUEST)
-        msg = {'token': str(AccessToken.for_user(user))}    # генерация токена
-        return Response(msg, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer.is_valid(raise_exception=True)
+    username = serializer.data.get('username')
+    confirmation_code = serializer.data.get('confirmation_code')
+    user = get_object_or_404(User, username=username)
+    if not default_token_generator.check_token(user, confirmation_code):
+        msg = {'confirmation_code': 'Код подтверждения невалиден'}
+        return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+    msg = {'token': str(AccessToken.for_user(user))}    # генерация токена
+    return Response(msg, status=status.HTTP_200_OK)
