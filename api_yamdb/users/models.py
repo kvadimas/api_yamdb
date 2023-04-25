@@ -11,11 +11,9 @@ USER_ROLES = (
 
 
 class User(AbstractUser):
-    username_validator = YamdbUsernameValidator()
     username = models.CharField(
         verbose_name='Имя пользователя',
         max_length=150,
-        validators=[username_validator],
         unique=True,
         blank=False,
         error_messages={
