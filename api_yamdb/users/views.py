@@ -1,13 +1,12 @@
-from sqlite3 import IntegrityError
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.template.loader import get_template
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.tokens import AccessToken
 
 from .models import User
@@ -57,28 +56,42 @@ def signup_send_code(request):
     serializer = UserSignupSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     username = serializer.initial_data['username']
+    # Более лаконичного разделения IntegrityError не придумал
     try:
         serializer.save()
-    except IntegrityError as er:
-        return Response(er, status=status.HTTP_400_BAD_REQUEST)
-    
-    finally:
-        user = get_object_or_404(User, username=username)
-        confirmation_code = default_token_generator.make_token(user)
+    except IntegrityError as int_er:
+        if str(int_er) == ('UNIQUE constraint failed: users_user.username, '
+                           'users_user.email'):
+            pass
+        elif str(int_er) == 'UNIQUE constraint failed: users_user.username':
+            return Response(
+                {'error': 'Пользователь с таким username уже зарегистрирован'},
+                status=status.HTTP_400_BAD_REQUEST)
+        elif str(int_er) == 'UNIQUE constraint failed: users_user.email':
+            return Response(
+                {'error': 'Пользователь с таким email уже зарегистрирован'},
+                status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(
+                {'error': str(int_er)},
+                status=status.HTTP_400_BAD_REQUEST)
 
-        context = {
-            'title': 'Код подтверждения Yamdb',
-            'username': user.username,
-            'confirmation_code': confirmation_code
-        }
-        message = get_template('email_confirm.html').render(context)
-        send_mail(
-            subject='Код подтверждения Yamdb',
-            message=message,
-            from_email='admin@yamdb.fake',
-            recipient_list=[user.email]
-        )
-        return Response(serializer.initial_data, status=status.HTTP_200_OK)
+    user = get_object_or_404(User, username=username)
+    confirmation_code = default_token_generator.make_token(user)
+
+    context = {
+        'title': 'Код подтверждения Yamdb',
+        'username': user.username,
+        'confirmation_code': confirmation_code
+    }
+    message = get_template('email_confirm.html').render(context)
+    send_mail(
+        subject='Код подтверждения Yamdb',
+        message=message,
+        from_email='admin@yamdb.fake',
+        recipient_list=[user.email]
+    )
+    return Response(serializer.initial_data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
