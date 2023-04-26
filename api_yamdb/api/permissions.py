@@ -1,6 +1,9 @@
 from rest_framework import permissions
 
 
+ALLOWED_METHODS = ('PUT', 'PATCH', 'DELETE')
+
+
 class IsAdminSuperuser(permissions.BasePermission):
     def has_permission(self, request, view):
         return (
