@@ -39,8 +39,7 @@ class IsAuthorOrRO(permissions.IsAuthenticatedOrReadOnly):
         if request.method not in permissions.SAFE_METHODS:
             return (request.user.is_authenticated
                     and obj.author == request.user)
-        else:
-            return request.user.is_authenticated
+        return request.user.is_authenticated
 
 
 class IsModeratorOrRO(permissions.IsAuthenticatedOrReadOnly):
@@ -48,5 +47,4 @@ class IsModeratorOrRO(permissions.IsAuthenticatedOrReadOnly):
         if request.method not in permissions.SAFE_METHODS:
             return (request.user.is_authenticated
                     and request.user.is_moderator)
-        else:
-            return request.user.is_authenticated
+        return request.user.is_authenticated
