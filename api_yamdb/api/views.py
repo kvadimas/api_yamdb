@@ -1,11 +1,12 @@
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import mixins, viewsets
+from rest_framework import viewsets
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import LimitOffsetPagination
 
 from api.filters import TitleFilter
+from api.mixins import ListCreateDestroyViewSet
 from api.permissions import (IsAdminOrRO, IsAuthorOrRO, IsModeratorOrRO)
 from api.serializers import (
     CategorySerializer,
@@ -32,10 +33,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleSerializer
 
 
-class CategoryViewSet(mixins.CreateModelMixin,
-                      mixins.ListModelMixin,
-                      mixins.DestroyModelMixin,
-                      viewsets.GenericViewSet):
+class CategoryViewSet(ListCreateDestroyViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [IsAdminOrRO]
@@ -45,10 +43,7 @@ class CategoryViewSet(mixins.CreateModelMixin,
     lookup_field = ('slug')
 
 
-class GenreViewSet(mixins.CreateModelMixin,
-                   mixins.ListModelMixin,
-                   mixins.DestroyModelMixin,
-                   viewsets.GenericViewSet):
+class GenreViewSet(ListCreateDestroyViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrRO,)
