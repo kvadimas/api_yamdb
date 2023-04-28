@@ -4,6 +4,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework import status
+from rest_framework.response import Response
 
 from api.filters import TitleFilter
 from api.mixins import ListCreateDestroyViewSet
@@ -56,33 +58,30 @@ class GenreViewSet(ListCreateDestroyViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     pagination_class = LimitOffsetPagination
-    permission_classes = [IsAuthorOrRO | IsAdminOrRO | IsModeratorOrRO]
-
-    @property
-    def title(self):
-        return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+    permission_classes = (IsAuthorAdminModeratorOrReadOnly,)
 
     def get_queryset(self):
-        return self.title.reviews.select_related('title')
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        return title.reviews.select_related()
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user, title=self.title)
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        serializer.is_valid(raise_exception=True)
+        serializer.save(author=self.request.user, title=title)
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     pagination_class = LimitOffsetPagination
-    permission_classes = [IsAuthorOrRO | IsAdminOrRO | IsModeratorOrRO]
-
-    @property
-    def review(self):
-        return get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+    permission_classes = (IsAuthorAdminModeratorOrReadOnly,)
 
     def get_queryset(self):
-        return self.review.comments.all()
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        return review.comments.all()
 
     def perform_create(self, serializer):
-        serializer.save(
-            author=self.request.user,
-            review=self.review
-        )
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        serializer.is_valid(raise_exception=True)
+        serializer.save(author=self.request.user, review=review)
+        return Response(status=status.HTTP_201_CREATED)
