@@ -66,15 +66,15 @@ class ReviewViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
     permission_classes = (IsAuthorAdminModeratorOrReadOnly,)
 
-    @property
-    def title(self):
-        return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
-
     def get_queryset(self):
-        return self.title.reviews.all()
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        return title.reviews.select_related()
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user, title=self.title)
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        serializer.is_valid(raise_exception=True)
+        serializer.save(author=self.request.user, title=title)
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -82,15 +82,12 @@ class CommentViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
     permission_classes = (IsAuthorAdminModeratorOrReadOnly,)
 
-    @property
-    def review(self):
-        return get_object_or_404(Review, pk=self.kwargs.get('review_id'))
-
     def get_queryset(self):
-        return self.review.comments.all()
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        return review.comments.all()
 
     def perform_create(self, serializer):
-        serializer.save(
-            author=self.request.user,
-            review=self.review
-        )
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        serializer.is_valid(raise_exception=True)
+        serializer.save(author=self.request.user, review=review)
+        return Response(status=status.HTTP_201_CREATED)
