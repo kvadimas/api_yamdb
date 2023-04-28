@@ -31,7 +31,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """Метод импортирующий csv в базу данных"""
-        # Добавляем User
+        # Добавляем записи в БД
         for link, tab in TABLE_IMPORT.items():
             _name = list(tab.values())[0]
             _app = list(tab.keys())[0]
@@ -40,12 +40,14 @@ class Command(BaseCommand):
                 _model.objects.all().delete()
                 self.stdout.write(self.style.SUCCESS(
                     f'Таблица {_name} очищена от старых записей.'))
+            # Подсчет добавляемых строк
+            with open(link, 'r') as csvfile:
+                count_row = len(list(csv.DictReader(csvfile)))
 
             with open(link,
                       'r',
                       encoding='utf-8') as csvfile:
                 dict_reader = csv.DictReader(csvfile)
-                count_row = sum(1 for row in dict_reader)
 
                 if _name == 'Title':
                     records = []
