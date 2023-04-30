@@ -1,6 +1,9 @@
 from rest_framework import permissions
 
 
+ALLOWED_METHODS = ('PUT', 'PATCH', 'DELETE')
+
+
 class IsAdminSuperuser(permissions.BasePermission):
     def has_permission(self, request, view):
         return (
@@ -14,7 +17,7 @@ class IsAdminSuperuser(permissions.BasePermission):
         )
 
 
-class IsAdminSuperuserOrReadOnly(permissions.BasePermission):
+class IsAdminOrRO(permissions.BasePermission):
     def has_permission(self, request, view):
         return (
             request.method in permissions.SAFE_METHODS
@@ -31,25 +34,17 @@ class IsAdminSuperuserOrReadOnly(permissions.BasePermission):
         )
 
 
-class IsAuthorAdminModeratorOrReadOnly(permissions.BasePermission):
-    aam_methods = ('PUT', 'PATCH', 'DELETE')
+class IsAuthorOrRO(permissions.IsAuthenticatedOrReadOnly):
+    def has_object_permission(self, request, view, obj):
+        if request.method not in permissions.SAFE_METHODS:
+            return (request.user.is_authenticated
+                    and obj.author == request.user)
+        return request.user.is_authenticated
 
-    def has_permission(self, request, view):
-        return (
-            request.method in permissions.SAFE_METHODS
-            or request.user.is_authenticated
-        )
 
-    def has_object_permission(self, request, view, obj,):
-        if request.method in IsAuthorAdminModeratorOrReadOnly.aam_methods:
-            return (
-                request.user.is_authenticated and (
-                    obj.author == request.user
-                    or request.user.is_admin
-                    or request.user.is_staff
-                    or request.user.is_moderator
-                )
-            )
-        else:
-            return (request.method in permissions.SAFE_METHODS
-                    or request.user.is_authenticated)
+class IsModeratorOrRO(permissions.IsAuthenticatedOrReadOnly):
+    def has_object_permission(self, request, view, obj):
+        if request.method not in permissions.SAFE_METHODS:
+            return (request.user.is_authenticated
+                    and request.user.is_moderator)
+        return request.user.is_authenticated

@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from reviews.models import Category, Comment, Genre, Review, Title
 
@@ -58,10 +59,14 @@ class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
+    title = serializers.HiddenField(default=None)
 
     class Meta:
         model = Review
-        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        fields = ('id', 'text', 'author', 'score', 'pub_date', 'title')
+        #Пробовал через UniqueTogetherValidator Выдавались ошибки
+        #Ссылка на код:
+        #https://gist.github.com/Eduard-Menshikh/0b950dc9b95ab802a41af43f54ac4a05
 
     def validate(self, data):
         title = self.context.get('view').kwargs.get('title_id')
@@ -74,7 +79,6 @@ class ReviewSerializer(serializers.ModelSerializer):
                 'Вы уже оставляли отзыв на это произведение!'
             )
         return data
-
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
