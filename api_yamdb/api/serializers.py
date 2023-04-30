@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from reviews.models import Category, Comment, Genre, Review, Title
 
@@ -45,6 +46,13 @@ class TitleCreateSerializer(serializers.ModelSerializer):
         model = Title
         fields = (
             'id', 'name', 'year', 'description', 'genre', 'category')
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Title.objects.all(),
+                fields=('name', 'year'),
+                message='Такое произведение уже есть в БД'
+            )
+        ]
 
     def validate_year(self, value):
         if isinstance(value, int) and value > datetime.now().year:
