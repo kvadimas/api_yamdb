@@ -3,6 +3,9 @@ from django.db import models
 
 from users.models import User
 
+MinValue = MinValueValidator(1)
+MaxValue = MaxValueValidator(10)
+
 
 class Genre(models.Model):
     name = models.CharField(
@@ -88,7 +91,7 @@ class Review(BaseModel):
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE, related_name='reviews')
     score = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(10)]
+        validators=[MinValue, MaxValue]
     )
 
     class Meta(BaseModel.Meta):
