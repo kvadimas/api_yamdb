@@ -1,7 +1,9 @@
+from django.db.utils import IntegrityError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import status
@@ -67,7 +69,12 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         serializer.is_valid(raise_exception=True)
-        serializer.save(author=self.request.user, title=title)
+        try:
+            serializer.save(author=self.request.user, title=title)
+        except IntegrityError:
+            raise ValidationError(
+                {'error': 'Вы уже оставляли отзыв на это произведение.'}
+            )
         return Response(status=status.HTTP_201_CREATED)
 
 
