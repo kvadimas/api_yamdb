@@ -52,9 +52,6 @@ class UserSignupSerializer(serializers.Serializer):
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
 
-    def create(self, validated_data):
-        return User.objects.get_or_create(**validated_data)
-
 
 class UserConfirmationCodeSerializer(serializers.Serializer):
     """Сериализатор подтверждения кода для получения токена."""
