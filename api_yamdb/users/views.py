@@ -56,7 +56,6 @@ def signup_send_code(request):
     serializer = UserSignupSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     username = serializer.initial_data['username']
-    # Более лаконичного разделения IntegrityError не придумал
     try:
         serializer.save()
     except IntegrityError as int_er:

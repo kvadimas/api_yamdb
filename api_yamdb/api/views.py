@@ -1,11 +1,16 @@
+from django.db.utils import IntegrityError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import mixins, viewsets
+from rest_framework import viewsets
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework import status
+from rest_framework.response import Response
 
 from api.filters import TitleFilter
+from api.mixins import ListCreateDestroyViewSet
 from api.permissions import (IsAdminOrRO, IsAuthorOrRO, IsModeratorOrRO)
 from api.serializers import (
     CategorySerializer,
@@ -32,10 +37,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleSerializer
 
 
-class CategoryViewSet(mixins.CreateModelMixin,
-                      mixins.ListModelMixin,
-                      mixins.DestroyModelMixin,
-                      viewsets.GenericViewSet):
+class CategoryViewSet(ListCreateDestroyViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [IsAdminOrRO]
@@ -45,10 +47,7 @@ class CategoryViewSet(mixins.CreateModelMixin,
     lookup_field = ('slug')
 
 
-class GenreViewSet(mixins.CreateModelMixin,
-                   mixins.ListModelMixin,
-                   mixins.DestroyModelMixin,
-                   viewsets.GenericViewSet):
+class GenreViewSet(ListCreateDestroyViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrRO,)
@@ -63,15 +62,20 @@ class ReviewViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
     permission_classes = [IsAuthorOrRO | IsAdminOrRO | IsModeratorOrRO]
 
-    @property
-    def title(self):
-        return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
-
     def get_queryset(self):
-        return self.title.reviews.select_related('title')
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        return title.reviews.select_related()
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user, title=self.title)
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.save(author=self.request.user, title=title)
+        except IntegrityError:
+            raise ValidationError(
+                {'error': 'Вы уже оставляли отзыв на это произведение.'}
+            )
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -79,15 +83,12 @@ class CommentViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
     permission_classes = [IsAuthorOrRO | IsAdminOrRO | IsModeratorOrRO]
 
-    @property
-    def review(self):
-        return get_object_or_404(Review, pk=self.kwargs.get('review_id'))
-
     def get_queryset(self):
-        return self.review.comments.all()
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        return review.comments.all()
 
     def perform_create(self, serializer):
-        serializer.save(
-            author=self.request.user,
-            review=self.review
-        )
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        serializer.is_valid(raise_exception=True)
+        serializer.save(author=self.request.user, review=review)
+        return Response(status=status.HTTP_201_CREATED)

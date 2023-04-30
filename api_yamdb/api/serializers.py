@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from reviews.models import Category, Comment, Genre, Review, Title
 
@@ -45,6 +46,13 @@ class TitleCreateSerializer(serializers.ModelSerializer):
         model = Title
         fields = (
             'id', 'name', 'year', 'description', 'genre', 'category')
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Title.objects.all(),
+                fields=('name', 'year'),
+                message='Такое произведение уже есть в БД'
+            )
+        ]
 
     def validate_year(self, value):
         if isinstance(value, int) and value > datetime.now().year:
@@ -62,18 +70,6 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date')
-
-    def validate(self, data):
-        title = self.context.get('view').kwargs.get('title_id')
-        author = self.context.get('request').user
-        if (
-            self.context.get('request').method == 'POST'
-            and Review.objects.filter(author=author, title=title).exists()
-        ):
-            raise serializers.ValidationError(
-                'Вы уже оставляли отзыв на это произведение!'
-            )
-        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):
